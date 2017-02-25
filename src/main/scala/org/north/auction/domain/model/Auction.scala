@@ -1,4 +1,4 @@
-package org.north.auction.domain
+package org.north.auction.domain.model
 
 object Auction {
   trait BidFailureReason {
@@ -8,7 +8,7 @@ object Auction {
   case object AuctionExpired extends BidFailureReason { val message = "auction expired" }
 }
 
-case class Auction(seller: String, product: String, highestBid: Bid, expires: Long) {
+case class Auction(seller: Seller, product: Product, highestBid: Bid, expires: Long) {
   import Auction._
 
   def bid(bidProposal: Bid): Either[Auction.BidFailureReason, Auction] =

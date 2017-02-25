@@ -1,6 +1,7 @@
 package org.north.auction.domain
 
 import akka.actor.{Actor, ActorLogging, Props}
+import org.north.auction.domain.model.{Auction, Bid}
 
 object AuctionActor {
   case class StartAuction(auction: Auction)
