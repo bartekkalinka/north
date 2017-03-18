@@ -5,20 +5,15 @@ import org.north.auction.domain.model.{Auction, Bid}
 
 object AuctionActor {
   trait Command
-  case class StartAuction(auction: Auction) extends Command
   case class BidInAuction(bid: Bid) extends Command
-  def props = Props[AuctionActor]
+  def props(auction: Auction): Props = Props(new AuctionActor(auction))
 }
 
-class AuctionActor extends Actor with ActorLogging {
+class AuctionActor(initAuction: Auction) extends Actor with ActorLogging {
   import AuctionActor._
   import context._
 
-  def receive = {
-    case StartAuction(auction) =>
-      sender ! auction.id
-      become(handleAuction(auction))
-  }
+  def receive: Receive = handleAuction(initAuction)
 
   def handleAuction(auction: Auction): Receive = {
     case BidInAuction(bid) => auction.bid(bid) match {

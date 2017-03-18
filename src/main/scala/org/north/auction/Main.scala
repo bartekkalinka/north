@@ -1,27 +1,17 @@
 package org.north.auction
 
-import java.time.{LocalDateTime, ZoneOffset}
-import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.pattern.ask
 import akka.stream.ActorMaterializer
-import akka.util.Timeout
-import org.north.auction.domain.model.{Auction, Bid, Product, User}
-import org.north.auction.domain.AuctionActor
 import org.north.auction.port.adapter.http.AuctionController
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 object Main extends App {
   implicit val system = ActorSystem("auctions")
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
-  val auctionActor = system.actorOf(AuctionActor.props)
-  val controller = new AuctionController(auctionActor)
+  val controller = new AuctionController()
 
   Http().bindAndHandle(controller.routes, "0.0.0.0", 9000)
 
