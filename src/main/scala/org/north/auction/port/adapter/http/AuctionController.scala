@@ -10,9 +10,10 @@ import akka.stream.ActorMaterializer
 import akka.pattern.ask
 import akka.util.Timeout
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import org.north.auction.port.adapter.http.protocol.AuctionRequest.InvalidRequestReason
 import org.north.auction.port.adapter.http.protocol.StartAuctionRequest
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class AuctionController(auctionActor: ActorRef)(implicit val system: ActorSystem, executor: ExecutionContextExecutor, materializer: ActorMaterializer) {
   import JsonProtocol._
@@ -22,9 +23,17 @@ class AuctionController(auctionActor: ActorRef)(implicit val system: ActorSystem
     pathEndOrSingleSlash {
       (post & entity(as[StartAuctionRequest])) { request =>
         complete {
-          (auctionActor ? request.prepareStartAuction).mapTo[String].map[ToResponseMarshallable] { a =>
-            OK -> a
+          val validationResult = request.prepareStartAuction
+          validationResult match {
+            case Left(reason: InvalidRequestReason) =>
+              Future.successful(reason.message)
+                .map[ToResponseMarshallable] { BadRequest -> _ }
+            case Right(message) =>
+              (auctionActor ? message)
+                .mapTo[String]
+                .map[ToResponseMarshallable] { OK -> _ }
           }
+
         }
       }
     }

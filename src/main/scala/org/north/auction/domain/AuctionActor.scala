@@ -4,8 +4,9 @@ import akka.actor.{Actor, ActorLogging, Props}
 import org.north.auction.domain.model.{Auction, Bid}
 
 object AuctionActor {
-  case class StartAuction(auction: Auction)
-  case class BidInAuction(bid: Bid)
+  trait Command
+  case class StartAuction(auction: Auction) extends Command
+  case class BidInAuction(bid: Bid) extends Command
   def props = Props[AuctionActor]
 }
 
