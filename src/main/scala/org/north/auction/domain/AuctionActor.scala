@@ -16,7 +16,7 @@ class AuctionActor extends Actor with ActorLogging {
 
   def receive = {
     case StartAuction(auction) =>
-      sender ! "ok"
+      sender ! auction.id
       become(handleAuction(auction))
   }
 

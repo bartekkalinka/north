@@ -8,7 +8,7 @@ object Auction {
   case object AuctionExpired extends BidFailureReason { val message = "auction expired" }
 }
 
-case class Auction(seller: User, product: Product, highestBid: Bid, expires: Long) {
+case class Auction(id: String, seller: User, product: Product, highestBid: Bid, expires: Long) {
   import Auction._
 
   def bid(bidProposal: Bid): Either[Auction.BidFailureReason, Auction] =

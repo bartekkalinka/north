@@ -1,5 +1,7 @@
 package org.north.auction.port.adapter.http.protocol
 
+import java.util.UUID
+
 import org.north.auction.domain.AuctionActor.StartAuction
 import org.north.auction.domain.model.{Auction, Bid, Product, User}
 import org.north.auction.port.adapter.http.protocol.AuctionRequest.InvalidRequestReason
@@ -17,6 +19,7 @@ case class StartAuctionRequest(seller: User, product: Product) {
     } else {
       val time = TimeUtils()
       val message = StartAuction(Auction(
+        id = UUID.randomUUID().toString,
         seller = seller,
         product = product,
         highestBid = Bid(seller, 0, time.current),
