@@ -34,7 +34,7 @@ class AuctionController()(implicit val system: ActorSystem, executor: ExecutionC
                 .map[ToResponseMarshallable] { BadRequest -> _ }
             case Right(auction) =>
               val actor = system.actorOf(AuctionActor.props(auction), auction.id)
-              log.debug(s"created auction actor ${actor.path}")
+              log.info(s"created auction actor ${actor.path}")
               Future.successful(auction.id)
                 .map[ToResponseMarshallable] { OK -> _ }
           }
