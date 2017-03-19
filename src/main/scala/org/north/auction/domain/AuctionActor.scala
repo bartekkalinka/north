@@ -5,6 +5,7 @@ import org.north.auction.domain.model.{Auction, Bid}
 
 object AuctionActor {
   trait Command
+  case object GetAuction extends Command
   case class BidInAuction(bid: Bid) extends Command
   def props(auction: Auction): Props = Props(new AuctionActor(auction))
 }
@@ -16,12 +17,15 @@ class AuctionActor(initAuction: Auction) extends Actor with ActorLogging {
   def receive: Receive = handleAuction(initAuction)
 
   def handleAuction(auction: Auction): Receive = {
-    case BidInAuction(bid) => auction.bid(bid) match {
-      case result@Right(newAuction) =>
-        sender ! result
-        become(handleAuction(newAuction))
-      case result@Left(failureReason) =>
-        sender ! result
-    }
+    case GetAuction =>
+      sender ! auction
+    case BidInAuction(bid) =>
+      auction.bid(bid) match {
+        case result@Right(newAuction) =>
+          sender ! result
+          become(handleAuction(newAuction))
+        case result@Left(failureReason) =>
+          sender ! result
+      }
   }
 }
