@@ -68,6 +68,15 @@ class AuctionController()(implicit val system: ActorSystem, executor: ExecutionC
       }
     }
 
+  val bidRoute =
+    pathPrefix("auctions" / Remaining) { auctionId =>
+      pathEndOrSingleSlash {
+        (put & entity(as[Bid])) {
+
+        }
+      }
+    }
+
   val routes =
     startAuctionRoute ~
     getAuctionRoute
