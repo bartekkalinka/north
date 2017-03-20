@@ -12,10 +12,10 @@ import akka.pattern.{AskTimeoutException, ask}
 import akka.util.Timeout
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import org.north.auction.domain.AuctionActor
-import org.north.auction.domain.AuctionActor.GetAuction
-import org.north.auction.domain.model.Auction
+import org.north.auction.domain.AuctionActor.{BidInAuction, GetAuction}
+import org.north.auction.domain.model.{Auction, BidFailureReason}
 import org.north.auction.port.adapter.http.protocol.AuctionRequest.InvalidRequestReason
-import org.north.auction.port.adapter.http.protocol.StartAuctionRequest
+import org.north.auction.port.adapter.http.protocol.{BidRequest, StartAuctionRequest}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -71,14 +71,24 @@ class AuctionController()(implicit val system: ActorSystem, executor: ExecutionC
   val bidRoute =
     pathPrefix("auctions" / Remaining) { auctionId =>
       pathEndOrSingleSlash {
-        (put & entity(as[Bid])) {
-
+        (put & entity(as[BidRequest])) { request =>
+          complete {
+            val actor = system.actorSelection(s"akka://auctions/user/$auctionId")
+            (actor ? request.toBidInAuction).mapTo[Either[BidFailureReason, Auction]].recover {
+              case e: AskTimeoutException =>
+                Left(s"auction $auctionId either does not exist or its actor does not respond")
+            }.map[ToResponseMarshallable] {
+              case Right(a) => OK -> a
+              case Left(reason: BidFailureReason) => BadRequest -> reason.message
+            }
+          }
         }
       }
     }
 
   val routes =
     startAuctionRoute ~
-    getAuctionRoute
+    getAuctionRoute ~
+    bidRoute
 }
 

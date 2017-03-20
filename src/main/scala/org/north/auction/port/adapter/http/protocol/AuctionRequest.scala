@@ -6,5 +6,4 @@ object AuctionRequest {
   }
 }
 
-trait AuctionRequest
 
