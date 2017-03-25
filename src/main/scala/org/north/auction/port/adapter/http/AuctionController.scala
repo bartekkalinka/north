@@ -74,13 +74,16 @@ class AuctionController()(implicit val system: ActorSystem, executor: ExecutionC
         (put & entity(as[BidRequest])) { request =>
           complete {
             val actor = system.actorSelection(s"akka://auctions/user/$auctionId")
-            (actor ? request.toBidInAuction).mapTo[Either[BidFailureReason, Auction]].recover {
-              case e: AskTimeoutException =>
-                Left(s"auction $auctionId either does not exist or its actor does not respond")
-            }.map[ToResponseMarshallable] {
-              case Right(a) => OK -> a
-              case Left(reason: BidFailureReason) => BadRequest -> reason.message
-            }
+            (actor ? request.toBidInAuction)
+              .mapTo[Either[BidFailureReason, Auction]]
+              .map(_.swap.map(_.message).swap)
+              .recover {
+                case e: AskTimeoutException =>
+                  Left(s"auction $auctionId either does not exist or its actor does not respond")
+              }.map[ToResponseMarshallable] {
+                case Right(a) => OK -> a
+                case Left(msg) => BadRequest -> msg
+              }
           }
         }
       }
