@@ -1,21 +1,34 @@
 package org.north.auction.domain
 
 import akka.actor.{Actor, ActorLogging, Props}
-import org.north.auction.domain.model.{Auction, Bid, User}
+import org.north.auction.domain.AuctionActor.StartAuction
+import org.north.auction.domain.model.{Auction, Bid, Product, User}
 import org.north.auction.util.TimeUtils
 
 object AuctionActor {
   trait Command
+  case class StartAuction(id: String, seller: User, product: Product) {
+    def toAuction: Auction = {
+      val time = TimeUtils()
+      Auction(
+        id = this.id,
+        seller = this.seller,
+        product = this.product,
+        highestBid = Bid(this.seller, 0, time.current),
+        expires = time.daysFromNow(1)
+      )
+    }
+  }
   case object GetAuction extends Command
   case class BidInAuction(bidder: User, amount: Int) extends Command
-  def props(auction: Auction): Props = Props(new AuctionActor(auction))
+  def props(startAuction: StartAuction): Props = Props(new AuctionActor(startAuction))
 }
 
-class AuctionActor(initAuction: Auction) extends Actor with ActorLogging {
+class AuctionActor(startAuction: StartAuction) extends Actor with ActorLogging {
   import AuctionActor._
   import context._
 
-  def receive: Receive = handleAuction(initAuction)
+  def receive: Receive = handleAuction(startAuction.toAuction)
 
   val timeUtils = TimeUtils()
 
