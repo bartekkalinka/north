@@ -30,13 +30,11 @@ class AuctionActor(startAuction: StartAuction) extends Actor with ActorLogging {
 
   def receive: Receive = handleAuction(startAuction.toAuction)
 
-  val timeUtils = TimeUtils()
-
   def handleAuction(auction: Auction): Receive = {
     case GetAuction =>
       sender ! auction
     case BidInAuction(bidder, amount) =>
-      val bid = Bid(bidder, amount, timeUtils.current)
+      val bid = Bid(bidder, amount, TimeUtils().current)
       auction.bid(bid) match {
         case result@Right(newAuction) =>
           sender ! result

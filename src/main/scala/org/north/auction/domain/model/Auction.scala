@@ -8,7 +8,7 @@ case object AuctionExpired extends BidFailureReason { val message = "auction exp
 
 case class Auction(id: String, seller: User, product: Product, highestBid: Bid, expires: Long) {
   def bid(bidProposal: Bid): Either[BidFailureReason, Auction] =
-    if(bidProposal.amount < highestBid.amount) {
+    if(bidProposal.amount <= highestBid.amount) {
       Left(AmountTooLow)
     } else if (bidProposal.timestamp >= expires) {
       Left(AuctionExpired)
