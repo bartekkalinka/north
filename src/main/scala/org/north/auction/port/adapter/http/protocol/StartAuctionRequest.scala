@@ -9,7 +9,7 @@ import org.north.auction.port.adapter.http.protocol.AuctionRequest.InvalidReques
 case object EmptySellerName extends InvalidRequestReason { val message = "seller name is empty" }
 case object EmptyProductName extends InvalidRequestReason { val message = "product name is empty" }
 
-case class StartAuctionRequest(seller: User, product: Product) {
+case class StartAuctionRequest(seller: User, product: Product, expiresIn: Long) {
   def prepareStartAuction: Either[InvalidRequestReason, StartAuction] = {
     if(seller.name == "") {
       Left(EmptySellerName)
@@ -19,7 +19,8 @@ case class StartAuctionRequest(seller: User, product: Product) {
       val auction = StartAuction(
         id = UUID.randomUUID().toString,
         seller = seller,
-        product = product
+        product = product,
+        expiresIn = expiresIn
       )
       Right(auction)
     }

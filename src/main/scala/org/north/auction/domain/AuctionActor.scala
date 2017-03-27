@@ -7,7 +7,7 @@ import org.north.auction.util.TimeUtils
 
 object AuctionActor {
   trait Command
-  case class StartAuction(id: String, seller: User, product: Product) {
+  case class StartAuction(id: String, seller: User, product: Product, expiresIn: Long) {
     def toAuction: Auction = {
       val time = TimeUtils()
       Auction(
@@ -15,7 +15,7 @@ object AuctionActor {
         seller = this.seller,
         product = this.product,
         highestBid = Bid(this.seller, 0, time.current),
-        expires = time.daysFromNow(1),
+        expires = time.current + expiresIn,
         expired = false
       )
     }
@@ -37,8 +37,9 @@ class AuctionActor(startAuction: StartAuction) extends Actor with ActorLogging {
       sender ! newAuction
       become(handleAuction(newAuction))
     case BidInAuction(bidder, amount) =>
-      val updatedAuction = auction.updateExpired(TimeUtils().current)
-      val bid = Bid(bidder, amount, TimeUtils().current)
+      val time = TimeUtils()
+      val updatedAuction = auction.updateExpired(time.current)
+      val bid = Bid(bidder, amount, time.current)
       updatedAuction.bid(bid) match {
         case result@Right(auctionAfterBid) =>
           sender ! result

@@ -7,7 +7,7 @@ import spray.json.DefaultJsonProtocol
 object JsonProtocol extends DefaultJsonProtocol {
   implicit val userFormat = jsonFormat1(User.apply)
   implicit val productFormat = jsonFormat1(Product.apply)
-  implicit val startAuctionRequestFormat = jsonFormat2(StartAuctionRequest)
+  implicit val startAuctionRequestFormat = jsonFormat3(StartAuctionRequest)
   implicit val bidFormat = jsonFormat3(Bid)
   implicit val bidRequestFormat = jsonFormat2(BidRequest)
   implicit val auctionFormat = jsonFormat6(Auction)
