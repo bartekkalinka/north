@@ -10,6 +10,6 @@ object JsonProtocol extends DefaultJsonProtocol {
   implicit val startAuctionRequestFormat = jsonFormat2(StartAuctionRequest)
   implicit val bidFormat = jsonFormat3(Bid)
   implicit val bidRequestFormat = jsonFormat2(BidRequest)
-  implicit val auctionFormat = jsonFormat5(Auction)
+  implicit val auctionFormat = jsonFormat6(Auction)
 }
 

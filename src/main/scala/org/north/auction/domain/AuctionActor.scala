@@ -2,7 +2,7 @@ package org.north.auction.domain
 
 import akka.actor.{Actor, ActorLogging, Props}
 import org.north.auction.domain.AuctionActor.StartAuction
-import org.north.auction.domain.model.{Auction, Bid, Product, User}
+import org.north.auction.domain.model._
 import org.north.auction.util.TimeUtils
 
 object AuctionActor {
@@ -15,7 +15,8 @@ object AuctionActor {
         seller = this.seller,
         product = this.product,
         highestBid = Bid(this.seller, 0, time.current),
-        expires = time.daysFromNow(1)
+        expires = time.daysFromNow(1),
+        expired = false
       )
     }
   }
@@ -32,15 +33,19 @@ class AuctionActor(startAuction: StartAuction) extends Actor with ActorLogging {
 
   def handleAuction(auction: Auction): Receive = {
     case GetAuction =>
-      sender ! auction
+      val newAuction = auction.updateExpired(TimeUtils().current)
+      sender ! newAuction
+      become(handleAuction(newAuction))
     case BidInAuction(bidder, amount) =>
+      val updatedAuction = auction.updateExpired(TimeUtils().current)
       val bid = Bid(bidder, amount, TimeUtils().current)
-      auction.bid(bid) match {
-        case result@Right(newAuction) =>
+      updatedAuction.bid(bid) match {
+        case result@Right(auctionAfterBid) =>
           sender ! result
-          become(handleAuction(newAuction))
+          become(handleAuction(auctionAfterBid))
         case result@Left(failureReason) =>
           sender ! result
+          become(handleAuction(updatedAuction))
       }
   }
 }
